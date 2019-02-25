@@ -3,13 +3,19 @@ const SIZE = 30;
 const SPACING = 0;
 const SPEED = 20;
 
+let LEFT = 37;
+let RIGHT = 39;
+let UP = 38;
+let DOWN = 40;
+let keys = [RIGHT, LEFT, UP, DOWN];
+
 let ctx = $('#canvas')[0].getContext('2d');
 let t_score = $('#score');
 nbWidth = Math.round((window.innerWidth * 0.6) / (SIZE + SPACING));
 nbHeight = Math.round((window.innerHeight * 0.8) / (SIZE + SPACING));
 ctx.canvas.width = nbWidth * (SIZE + SPACING);
 ctx.canvas.height = nbHeight * (SIZE + SPACING);
-ctx.strokeStyle='#9E9E9E';
+ctx.strokeStyle = '#9E9E9E';
 
 $('#canvas').css({
     "border-color": "#607D8B",
@@ -17,11 +23,23 @@ $('#canvas').css({
     "border-style": "solid"
 });
 
+$('input[type=radio][name=keyboardType]').change(function () {
+    this.blur();
+    let isArrows = this.id == 'keys_arrows';
+    LEFT = isArrows ? 37 : 97;
+    RIGHT = isArrows ? 39 : 99;
+    UP = isArrows ? 38 : 101;
+    DOWN = isArrows ? 40 : 98;
+    keys = [RIGHT, LEFT, UP, DOWN];
+    clearInterval(interval);
+    startGame();
+});
+
 let nodes, food, score, interval;
 startGame();
 
 function startGame() {
-    nodes = [{ x: 300, y: 300, d: 39, q: [] }];
+    nodes = [{ x: 300, y: 300, d: RIGHT, q: [] }];
     food = { x: 0, y: 0 }
     score = 0;
     t_score.text("0");
@@ -87,8 +105,8 @@ function checkCollision() {
     }
 
     //check border collision
-    if (cls || (n.d == 37 && n.x == 0) || (n.d == 38 && n.y == 0)
-        || (n.d == 39 && n.x >= (ctx.canvas.width - SIZE)) || (n.d == 40 && n.y >= (ctx.canvas.height - SIZE))) {
+    if (cls || (n.d == LEFT && n.x == 0) || (n.d == UP && n.y == 0)
+        || (n.d == RIGHT && n.x >= (ctx.canvas.width - SIZE)) || (n.d == DOWN && n.y >= (ctx.canvas.height - SIZE))) {
         clearInterval(interval);
         $('#gameover').show();
         //document.body.style.backgroundColor = "#F44336";
@@ -105,8 +123,8 @@ function checkCollision() {
 function addNode(k) {
     for (let i = 0; i < k; ++i) {
         n = nodes[nodes.length - 1];
-        ix = n.d === 37 ? n.x + (SIZE + SPACING) : (n.d === 39 ? n.x - (SIZE + SPACING) : n.x);
-        iy = n.d === 38 ? n.y + (SIZE + SPACING) : (n.d === 40 ? n.y - (SIZE + SPACING) : n.y);
+        ix = n.d === LEFT ? n.x + (SIZE + SPACING) : (n.d === RIGHT ? n.x - (SIZE + SPACING) : n.x);
+        iy = n.d === UP ? n.y + (SIZE + SPACING) : (n.d === DOWN ? n.y - (SIZE + SPACING) : n.y);
         nodes.push({ x: ix, y: iy, d: n.d, q: [] });
     }
 }
@@ -114,23 +132,23 @@ function addNode(k) {
 function updateNodePosition(idx) {
     node = nodes[idx];
     switch (node.d) {
-        case 37:
+        case LEFT:
             node.x -= STEP;
             break;
-        case 38:
+        case UP:
             node.y -= STEP;
             break;
-        case 39:
+        case RIGHT:
             node.x += STEP;
             break;
-        case 40:
+        case DOWN:
             node.y += STEP;
             break;
     }
 
     if (idx > 0) {
         if (node.q.length > 0) {
-            if (((node.q[0].d == 38 || node.q[0].d == 40) && node.x == node.q[0].x) || ((node.q[0].d == 37 || node.q[0].d == 39) && node.y == node.q[0].y)) {
+            if (((node.q[0].d == UP || node.q[0].d == DOWN) && node.x == node.q[0].x) || ((node.q[0].d == LEFT || node.q[0].d == RIGHT) && node.y == node.q[0].y)) {
                 node.d = node.q[0].d;
                 n = node.q.shift();
                 if (idx < nodes.length - 1)
@@ -139,7 +157,7 @@ function updateNodePosition(idx) {
         }
     } else {
         if (node.q.length > 0) {
-            if (((node.q[0] == 37 || node.q[0] == 39) && node.y % SIZE === 0) || ((node.q[0] == 38 || node.q[0] == 40) && node.x % SIZE === 0)) {
+            if (((node.q[0] == LEFT || node.q[0] == RIGHT) && node.y % SIZE === 0) || ((node.q[0] == UP || node.q[0] == DOWN) && node.x % SIZE === 0)) {
                 node.d = node.q.shift();
                 if (nodes.length > 1)
                     nodes[idx + 1].q.push({ x: node.x, y: node.y, d: node.d });
@@ -150,16 +168,16 @@ function updateNodePosition(idx) {
 
 $("body").keydown(function (e) {
     dir = e.keyCode;
-    if (dir >= 37 && dir <= 40) {
+    if (keys.includes(dir)) {
         h = nodes[0];
         l = nodes.length;
         lastdir = h.q.length === 0 ? h.d : h.q[h.q.length - 1];
 
         if (((dir != lastdir) && (l > 1 && (
-            (lastdir == 37 && dir != 39)
-            || (lastdir == 39 && dir != 37)
-            || (lastdir == 38 && dir != 40)
-            || (lastdir == 40 && dir != 38))))
+            (LEFT == lastdir && RIGHT != dir)
+            || (RIGHT == lastdir && LEFT != dir)
+            || (UP == lastdir && DOWN != dir)
+            || (DOWN == lastdir && UP != dir))))
             || l == 1)
             nodes[0].q.push(e.keyCode);
     } else if (e.keyCode == 13) {

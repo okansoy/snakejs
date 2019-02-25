@@ -10,11 +10,23 @@
 <body>
 
     <div align="center">
-        <h1 id="score">0</h1>
+
+        <div style="float: left;text-align:left">
+            <label class="radio-inline">
+                <input type="radio" name="keyboardType" id="keys_arrows" checked>Arrows
+            </label>
+            <br />
+            <label class="radio-inline">
+                <input type="radio" name="keyboardType" id="keys_numpad">Numpad(1,2,3,5)
+            </label>
+        </div>
+
+        <h1 id="score"></h1>
+
         <canvas id="canvas">
             Your browser does not support the canvas element.
         </canvas>
-        <h3 id="gameover" style="color:red">GAME OVER ('entrer' pour recommencer)</h3>
+        <h3 id="gameover" style="color:red">GAME OVER ('enter' to restart)</h3>
     </div>
 
 </body>
